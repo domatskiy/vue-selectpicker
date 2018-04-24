@@ -19,7 +19,7 @@ example app
 
 ```js
 
-import selectPicker from 'plugin'
+import selectPicker from 'vue-selectpicker'
 Vue.use(selectPicker)
 
 export default {
