@@ -8,7 +8,7 @@
                 <input :placeholder="searchPlaceholder" v-model="search_text" @click="searchFieldClick"/>
             </div>
             <div class="list" @wheel="stopScroll" v-if="list.length > 0 || Object.keys(list).length > 0">
-                <div class="list__item" v-for="(name, value) in list" v-show="!search_text || name.toLowerCase().indexOf(search_text.toLowerCase().trim()) > -1" @click="selListValue(value, $event)" :class="values && ((typeof values === 'object' && values.length > 0 && values.indexOf(value) > -1) || values == value) ? 'list__item--checked' : ''">
+                <div class="list__item" v-for="(name, value) in list" v-show="!search_text || name.toLowerCase().indexOf(search_text.toLowerCase().trim()) > -1" @click="selListValue(+value, $event)" :class="values && ((typeof values === 'object' && values.length > 0 && values.indexOf(+value) > -1) || values == value) ? 'list__item--checked' : ''">
                     <div>{{name}}</div>
                 </div>
             </div>
@@ -141,17 +141,19 @@ export default {
     },
     selListValue: function ($value, $event) {
       $event.stopPropagation()
-      if (this.multi === true) {
-        this.values = Object.values(this.values)
-        let $index = this.values.indexOf($value)
-        // добавляем значение
-        if ($index === -1) {
-          this.values.push($value)
+      if($value !== null) {
+        if (this.multi === true) {
+          this.values = Object.values(this.values)
+          let $index = this.values.indexOf($value)
+          // добавляем значение
+          if ($index === -1) {
+            this.values.push($value)
+          } else {
+            this.values.splice($index, 1)
+          }
         } else {
-          this.values.splice($index, 1)
+          this.values = $value
         }
-      } else {
-        this.values = $value
       }
       this.close(true)
     },
@@ -193,12 +195,14 @@ export default {
       let text = []
       if (Array.isArray(newValues)) {
         let values = Object.values(newValues)
+        console.log('!!! values', values, this.list)
         if (values.length > 0) {
           // заполняем текст
           for (let value in this.list) {
             let name = this.list.hasOwnProperty(value) ? this.list[value] : null
             // console.info(value, name, this.values, typeof values, Array.isArray(values))
-            if (value && ((Array.isArray(values) && values.indexOf(value) > -1) || this.values === value)) {
+            console.log('value: ', value, +value, values.indexOf(+value))
+            if (value && (values.indexOf(+value) > -1 || +this.values === +value)) {
               text.push(name)
             }
           }
@@ -210,7 +214,7 @@ export default {
           }
         }
       } else {
-        let name = this.list.hasOwnProperty(newValues) ? this.list[newValues] : null
+        let name = this.list.hasOwnProperty(+newValues) ? this.list[+newValues] : null
         if (name) {
           text.push(name)
         }
