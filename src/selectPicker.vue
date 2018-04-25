@@ -5,7 +5,7 @@
         </div>
         <div class="selecter__dropdown" v-show="open === true">
             <div class="search" v-if="search == true">
-                <input :placeholder="searchPlaceholder" v-model="search_text"/>
+                <input :placeholder="searchPlaceholder" v-model="search_text" @click="searchFieldClick"/>
             </div>
             <div class="list" @wheel="stopScroll" v-if="list.length > 0 || Object.keys(list).length > 0">
                 <div class="list__item" v-for="(name, value) in list" v-show="!search_text || name.toLowerCase().indexOf(search_text.toLowerCase().trim()) > -1" @click="selListValue(value, $event)" :class="values && ((typeof values === 'object' && values.length > 0 && values.indexOf(value) > -1) || values == value) ? 'list__item--checked' : ''">
@@ -96,6 +96,9 @@ export default {
     })
   },
   methods: {
+    searchFieldClick: function (e) {
+      e.stopPropagation()
+    },
     stopScroll: function (e) {
       e.stopPropagation()
     },
@@ -188,23 +191,31 @@ export default {
     values: function (newValues) {
       // console.log('changed: values=', newValues, Object.values(newValues), this.list)
       let text = []
-      let values = Object.values(newValues)
-      if (values.length > 0) {
-        // заполняем текст
-        for (let value in this.list) {
-          let name = this.list.hasOwnProperty(value) ? this.list[value] : null
-          // console.info(value, name, this.values, typeof values, Array.isArray(values))
-          if (value && ((Array.isArray(values) && values.indexOf(value) > -1) || this.values === value)) {
-            text.push(name)
+      if (Array.isArray(newValues)) {
+        let values = Object.values(newValues)
+        if (values.length > 0) {
+          // заполняем текст
+          for (let value in this.list) {
+            let name = this.list.hasOwnProperty(value) ? this.list[value] : null
+            // console.info(value, name, this.values, typeof values, Array.isArray(values))
+            if (value && ((Array.isArray(values) && values.indexOf(value) > -1) || this.values === value)) {
+              text.push(name)
+            }
+          }
+          for (let m in this.data) {
+            let item = this.list.hasOwnProperty(m) ? this.list[m] : null
+            if (item && ((typeof this.values === 'object' && this.values.indexOf(item.id) > -1) || this.values === item.id)) {
+              text.push(item.name)
+            }
           }
         }
-        for (let m in this.data) {
-          let item = this.list.hasOwnProperty(m) ? this.list[m] : null
-          if (item && ((typeof this.values === 'object' && this.values.indexOf(item.id) > -1) || this.values === item.id)) {
-            text.push(item.name)
-          }
+      } else {
+        let name = this.list.hasOwnProperty(newValues) ? this.list[newValues] : null
+        if (name) {
+          text.push(name)
         }
       }
+
       this.value_text = text.length < 3 ? text.join(', ') : 'выбрано ' + text.length
     }
   }
