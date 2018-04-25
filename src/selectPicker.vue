@@ -30,7 +30,7 @@
 import selectPickerBus from './selectPickerBus'
 
 export default {
-  name: 'selectPicker',
+  name: 'selectpicker',
   props: {
     placeholder: {
       type: String,
@@ -45,7 +45,7 @@ export default {
       type: Boolean,
       required: false,
       default: function () {
-        return true
+        return false
       }
     },
     search: {
@@ -138,35 +138,33 @@ export default {
     },
     selListValue: function ($value, $event) {
       $event.stopPropagation()
-      let values = Object.values(this.values)
       if (this.multi === true) {
-        let $index = values.indexOf($value)
+        this.values = Object.values(this.values)
+        let $index = this.values.indexOf($value)
         // добавляем значение
         if ($index === -1) {
-          values.push($value)
+          this.values.push($value)
         } else {
-          values.splice($index, 1)
+          this.values.splice($index, 1)
         }
       } else {
-        values = $value
+        this.values = $value
       }
-      this.values = values
       this.close(true)
     },
     selValue: function ($item) {
-      let values = Object.values(this.values)
       if (this.multi === true) {
+        let values = Object.values(this.values)
         let index = values.indexOf($item.id)
         // добавляем значение
         if (index === -1) {
-          values.push($item.id)
+          this.values.push($item.id)
         } else {
-          values.splice(index, 1)
+          this.values.splice(index, 1)
         }
       } else {
-        values = $item.id
+        this.values = $item.id
       }
-      this.values = values
       this.close(true)
     },
     setNewValue: function () {
@@ -175,7 +173,7 @@ export default {
         this.values = []
       } else if (this.multi === false && typeof this.value === 'object') {
         console.warn('selectPicker: need single value for select')
-        this.values = this.value.slice(0, 1)[0]
+        this.values = null // this.value.slice(0, 1)[0]
       } else {
         this.values = this.value
       }

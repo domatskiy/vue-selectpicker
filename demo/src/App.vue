@@ -1,17 +1,15 @@
 <template>
     <div id="app">
 
-        <!-- <selectpicker
-                :value="[1]"
-                :data="dataList"
-                :multy="true"
-                :search="true"
-                v-model="selectedList"
-                placeholder="Выбор из тестового списка"
-                searchPlaceholder="Поиск в тестовом списке"></selectpicker> -->
+        <selectpicker
+            :data="dataList"
+            :multy="false"
+            :search="true"
+            v-model="selectedList"
+            placeholder="Выбор из тестового списка"
+            searchPlaceholder="Поиск в тестовом списке"></selectpicker>
 
         <selectpicker
-            :value="[1]"
             :list="list"
             :multy="true"
             :search="true"
@@ -37,7 +35,7 @@
       components: {},
       data () {
         return {
-          selectedList: {},
+          selectedList: [],
           list: {
             1: 'Test 1',
             2: 'Test 2',
