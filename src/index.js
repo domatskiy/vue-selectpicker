@@ -1,13 +1,13 @@
-import Vue from 'vue'
+import selectpicker from './Components/selectPicker.vue'
 
-const selectPickerPlugin = {
+const SelectPickerPlugin = {
   install (VueInstance, options) {
-    VueInstance.component('selectpicker', require('./selectPicker.vue'))
+    VueInstance.component('selectpicker', selectpicker)
   }
 }
 
 if (typeof window !== 'undefined' && window.Vue) {
-  window.Vue.use(selectPickerPlugin)
+  window.Vue.use(SelectPickerPlugin)
 }
 
-export default selectPickerPlugin
+export default SelectPickerPlugin

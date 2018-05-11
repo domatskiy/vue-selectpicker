@@ -27,7 +27,7 @@
 
 <script>
 
-import selectPickerBus from './selectPickerBus'
+import selectPickerBus from './../selectPickerBus'
 
 export default {
   name: 'selectpicker',
@@ -141,7 +141,7 @@ export default {
     },
     selListValue: function ($value, $event) {
       $event.stopPropagation()
-      if($value !== null) {
+      if ($value !== null) {
         if (this.multi === true) {
           this.values = Object.values(this.values)
           let $index = this.values.indexOf($value)
@@ -227,5 +227,5 @@ export default {
 </script>
 
 <style lang="less" scope>
-@import "styles";
+@import "./selectPicker";
 </style>
