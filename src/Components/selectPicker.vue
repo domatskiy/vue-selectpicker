@@ -37,10 +37,7 @@ export default {
       required: false,
       default: 'Выбор значения'
     },
-    value: {
-      required: false,
-      default: ''
-    },
+    value:{},
     multi: {
       type: Boolean,
       required: false,
@@ -100,10 +97,9 @@ export default {
       values: null
     }
   },
-  beforeMount: function () {
-    this.setNewValue()
-  },
+  beforeMount: function () {},
   mounted: function () {
+    this.setNewValue()
     selectPickerBus.$on('selectpickerClose', () => {
       this.close(false)
     })
@@ -170,6 +166,7 @@ export default {
       this.close(true)
     },
     valueSelected: function ($val) {
+      console.log('valueSelected', $val, this.values)
 
       if (this.values === null)
         return false;
@@ -179,18 +176,19 @@ export default {
         if (this.values.length === 0)
           return false;
 
-        let index = this.values.indexOf($val)
-        if (index < -1) {
-          index = this.values.indexOf($val+'')
+        let index = this.values.indexOf($val + '')
+        if (index === -1) {
+          index = this.values.indexOf(+$val)
         }
         return index > -1
       } else {
-        return this.values === $val || this.values === $val + ''
+        return this.values === $val || this.values + '' === $val + ''
       }
     },
     setNewValue: function () {
 
       if(this.value === null) {
+        // console.log('setNewValue for null')
         if(this.multi === true) {
           this.$set(this, 'values', [])
         } else {
@@ -207,17 +205,19 @@ export default {
         console.warn('selectPicker: need single value for select, ', this.value, '!!!')
         this.$set(this, 'values', null)
       } else {
+        // console.log('setNewValue', this.value)
         this.$set(this, 'values', this.value)
       }
     }
   },
   watch: {
     value: function (newValue) {
+      // console.log('value...')
       this.setNewValue()
       this.close(true)
     },
     values: function (newValues) {
-      // console.log('changed: values=', newValues, newValues, this.list)
+      console.log('changed: values=', newValues, this.list)
       let text = []
 
       // заполняем текст
@@ -236,6 +236,7 @@ export default {
       }
 
       this.value_text = text.length < 3 ? text.join(', ') : 'выбрано ' + text.length
+      console.log('value_text', text, this.value_text)
     }
   }
 }

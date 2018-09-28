@@ -39,6 +39,10 @@
         selected values: {{selectedMulti}}<br>
         selected values: {{selectedMultiText}}<br>
         <br>
+        <br>
+        <a @click="setVal">set</a>
+        <br>
+        <br>
     </div>
 </template>
 
@@ -53,8 +57,8 @@
       components: {},
       data () {
         return {
-          selectedOne: null,
-          selectedMulti: [],
+          selectedOne: 2,
+          selectedMulti: ['1', 2],
           selectedMultiText: [],
           list: {
             1: 'Test 1',
@@ -84,6 +88,13 @@
       mounted: function () {
         // console.log('app mounted', this.$yandexmap)
       },
-      methods: {}
+      methods: {
+        setVal: function () {
+          console.log('set val')
+          this.selectedOne = 3
+          this.selectedMulti = ['2', 3]
+          this.selectedMultiText = ['t2', 2]
+        }
+      }
     }
 </script>
