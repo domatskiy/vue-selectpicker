@@ -22,7 +22,23 @@
         <br>
         <br>
         <br>
-        selected values: {{selectedMulti}}
+        Multi string key:<br>
+        <selectpicker
+                :list="listText"
+                :multi="true"
+                :search="true"
+                v-model="selectedMultiText"
+                placeholder="Выбор из тестового списка"
+                searchPlaceholder="Поиск в тестовом списке"></selectpicker>
+
+        <br>
+        <br>
+        <br>
+
+        selected values: {{selectedOne}}<br>
+        selected values: {{selectedMulti}}<br>
+        selected values: {{selectedMultiText}}<br>
+        <br>
     </div>
 </template>
 
@@ -39,10 +55,16 @@
         return {
           selectedOne: null,
           selectedMulti: [],
+          selectedMultiText: [],
           list: {
             1: 'Test 1',
             2: 'Test 2',
             3: 'Test 3'
+          },
+          listText: {
+            't1': 'Test 1',
+            't2': 'Test 2',
+            't3': 'Test 3'
           },
           dataList: [
             {
