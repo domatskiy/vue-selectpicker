@@ -8,6 +8,7 @@ const selectPickerBus = new Vue({
   },
   created: function () {
     this.body_click_handler = () => {
+      // console.log('body_click_handler')
       document.body.removeEventListener('click', this.body_click_handler)
       this.$emit('selectpickerClose', true)
     }

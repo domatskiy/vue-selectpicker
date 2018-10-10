@@ -1,25 +1,28 @@
 <template>
     <div class="selecter">
-        <div class="selecter__input" @click="toggleSelect">
+        <div class="selecter__input" @click.stop.prevent="toggleSelect">
             <span>{{value_text.length > 0 ? value_text : placeholder}}</span>
         </div>
         <div class="selecter__dropdown" :class="[multi ? 'selecter__dropdown--multi' : '']" v-show="open === true">
-            <div class="search" v-if="search == true">
-                <input :placeholder="searchPlaceholder" v-model="search_text" @click="searchFieldClick"/>
+            <div class="search" v-if="search === true">
+                <input :placeholder="searchPlaceholder" v-model="search_text" @click.stop/>
             </div>
-            <div class="list" @wheel="stopScroll" v-if="list.length > 0 || Object.keys(list).length > 0">
-                <div class="list__item" v-if="required === false && multi === false" @click="selListValue(null, $event)">Не выбрано</div>
+            <div class="list"
+                 @keyup.page-down="onPageDown"
+                 v-on:scroll.stop
+                 v-if="list.length > 0 || Object.keys(list).length > 0">
+                <div class="list__item" v-if="required === false && multi === false" @click.stop="selListValue(null, $event)">{{noSelText}}</div>
                 <div class="list__item"
-                     v-for="(name, value) in list"
+                     v-for="(name, id) in list"
                      v-show="!search_text || name.toLowerCase().indexOf(search_text.toLowerCase().trim()) > -1"
-                     @click="selListValue(value, $event)"
-                     :class="valueSelected(value) ? 'list__item--checked' : ''">
+                     @click.stop="selListValue(id, $event)"
+                     :class="valueSelected(id) ? 'list__item--checked' : ''">
                     <div>{{name}}</div>
                 </div>
             </div>
             <div class="footer" v-show="multi === true && showActions === true">
-                <button type="button" @click="resetSelect">Сбросить</button>
-                <button type="button" @click="closeSelect($event)">Выбрать</button>
+                <button type="button" @click.stop.defaut="resetSelect">Сбросить</button>
+                <button type="button" @click.stop.defaut="closeSelect(false, $event)">Выбрать</button>
             </div>
         </div>
     </div>
@@ -36,6 +39,11 @@ export default {
       type: String,
       required: false,
       default: 'Выбор значения'
+    },
+    noSelText: {
+      type: String,
+      required: false,
+      default: 'Не выбрано'
     },
     value:{},
     multi: {
@@ -99,75 +107,100 @@ export default {
   },
   beforeMount: function () {},
   mounted: function () {
+
     this.setNewValue()
+
+    /**
+     * событие шины, закрыть селекты
+     */
     selectPickerBus.$on('selectpickerClose', () => {
-      this.close(false)
+      // console.log('selectpicker: event selectpickerClose ...')
+      this.open = false
     })
+
+    selectPickerBus.$on('selectpickerOpen', () => {
+      // console.log('selectpicker: event selectpickerOpen ...')
+    })
+
+    /**
+    * отслеживаем изменение значения
+    * вызываем setNewValue
+    */
+    this.$watch('value', function ($value) {
+      // console.log('selectpicker: changed value...', $value)
+      this.setNewValue()
+    }, {
+      deep: true
+    });
   },
   methods: {
-    searchFieldClick: function (e) {
-      e.stopPropagation()
-    },
-    stopScroll: function (e) {
-      e.stopPropagation()
+    resetSelect: function (e) {
+      // console.log('selectpicker: resetSelect')
+      this.values = this.multi === true ? [] : null
+      this.closeSelect(true, false)
     },
     openSelect: function (e) {
-      selectPickerBus.$emit('selectpickerClose', true)
+      // console.log('selectpicker: openSelect')
+      selectPickerBus.$emit('selectpickerClose', this)
       this.open = true
-      selectPickerBus.$emit('selectpickerOpen', true)
-      e.stopPropagation()
-      e.preventDefault()
+      selectPickerBus.$emit('selectpickerOpen', this)
     },
-    resetSelect: function (e) {
-      this.values = this.multi === true ? [] : null
-      this.close(false)
-      e.stopPropagation()
-      e.preventDefault()
-    },
-    closeSelect: function (e) {
-      e.stopPropagation()
-      e.preventDefault()
-      this.close(false)
-    },
-    toggleSelect: function (e) {
-      e.stopPropagation()
-      e.preventDefault()
-      if (this.open === false) {
-        this.openSelect(e)
-      } else {
-        this.closeSelect(e)
+    closeSelect: function (setValue, checkMulti) {
+      if (typeof setValue !== 'boolean') {
+        setValue = true
       }
-    },
-    close: function (check) {
-      if (typeof check !== 'boolean') {
-        check = false
+      if (typeof checkMulti !== 'boolean') {
+        checkMulti = false
       }
-      if (!check || (check && this.multi === false)) {
-        this.open = false
+      // console.log('selectpicker: closeSelect ... ', setValue, checkMulti)
+      if (setValue && (!checkMulti || (checkMulti && this.multi === false))) {
         this.search_text = ''
+        this.open = false
+        // console.log('selectpicker: emit value', this.values)
         this.$emit('input', this.values)
       }
     },
-    selListValue: function ($value, $event) {
-      $event.stopPropagation()
+    toggleSelect: function (e) {
+      // console.log('selectpicker: toggleSelect', this.open)
+      if (this.open === false) {
+        this.openSelect()
+      } else {
+        this.closeSelect(true, false)
+      }
+    },
+    onPageDown: function () {
+      console.log('onPageDown')
+    },
+    selListValue: function ($val, $event) {
+      // console.log('selectPicker: selListValue', $val)
 
-      if ($value !== null && this.multi === true) {
-        // this.values = Object.values(this.values)
-        let $index = this.values.indexOf($value)
-        // добавляем значение
-        if ($index === -1) {
-          this.values.push($value)
+      if (this.multi === true && !Array.isArray(this.values)) {
+        this.values = []
+      } else if (this.multi !== true && Array.isArray(this.values)){
+        this.values = null
+      }
+
+      if (Array.isArray(this.values)) {
+        // get index in array
+        let index = this.values.indexOf($val + '')
+        if (index === -1) {
+            index = this.values.indexOf(+$val)
+        }
+
+        if (index === -1) {
+          this.values.push($val)
         } else {
-          this.values.splice($index, 1)
+          this.values.splice(index, 1)
         }
       } else {
-        this.values = $value
+        this.values = $val
       }
-      this.close(true)
+
+      // console.log('selectPicker: selListValue', this.values)
+      this.closeSelect(true, true)
     },
     valueSelected: function ($val) {
-      console.log('valueSelected', $val, this.values)
-
+      // console.log('selectpicker: valueSelected', $val, this.values)
       if (this.values === null)
         return false;
 
@@ -185,10 +218,13 @@ export default {
         return this.values === $val || this.values + '' === $val + ''
       }
     },
+    /**
+     * перерасчет values
+     */
     setNewValue: function () {
 
       if(this.value === null) {
-        // console.log('setNewValue for null')
+        // console.log('selectpicker: setNewValue for null')
         if(this.multi === true) {
           this.$set(this, 'values', [])
         } else {
@@ -200,7 +236,7 @@ export default {
 
       if (this.multi === true && !Array.isArray(this.value)) {
         console.warn('selectPicker: need array for multi', this.value)
-        this.$set(this, 'values', [])
+        this.$set(this, 'values', [this.value])
       } else if (this.multi === false && Array.isArray(this.value)) {
         console.warn('selectPicker: need single value for select, ', this.value, '!!!')
         this.$set(this, 'values', null)
@@ -211,16 +247,15 @@ export default {
     }
   },
   watch: {
-    value: function (newValue) {
-      // console.log('value...')
-      this.setNewValue()
-      this.close(true)
-    },
+
     values: function (newValues) {
-      console.log('changed: values=', newValues, this.list)
+      /**
+       * формирование текста из выбранных значений
+       */
+      // console.log('selectpicker: changed values, new value=', newValues, 'list', this.list)
       let text = []
 
-      // заполняем текст
+      // заполняем текст из list
       Object.keys(this.list).map(($key) => {
         let name = this.list[$key]
         if (name && this.valueSelected($key)) {
@@ -236,7 +271,7 @@ export default {
       }
 
       this.value_text = text.length < 3 ? text.join(', ') : 'выбрано ' + text.length
-      console.log('value_text', text, this.value_text)
+      // console.log('value_text', text, this.value_text)
     }
   }
 }
