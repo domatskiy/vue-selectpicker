@@ -132,6 +132,13 @@ export default {
     }, {
       deep: true
     });
+
+    this.$watch('list', function ($list) {
+      console.log('selectpicker: list value...', $list)
+      this.setNewValue()
+    }, {
+          deep: true
+    });
   },
   methods: {
     resetSelect: function (e) {
