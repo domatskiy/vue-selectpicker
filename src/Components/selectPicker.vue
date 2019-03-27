@@ -1,28 +1,34 @@
 <template>
-    <div class="selecter">
+    <div class="selecter" :class="[tagged ? 'selecter--tagged' : '']">
         <div class="selecter__input" @click.stop.prevent="toggleSelect">
-            <span>{{value_text.length > 0 ? value_text : placeholder}}</span>
+            <span v-if="tagged === false">{{textValue.length > 0 ? textValue : placeholder}}</span>
+            <div class="selecter__tagged" v-else>
+              <div class="selecter__tagged-item" v-for="(item, index) in arValue">
+                <span>{{item.name}}</span>
+                <span class="selecter__tagged-item-close" @click.stop="selListValue(item.id, $event)"></span>
+              </div>
+            </div>
         </div>
         <div class="selecter__dropdown" :class="[multi ? 'selecter__dropdown--multi' : '']" v-show="open === true">
             <div class="search" v-if="search === true">
-                <input :placeholder="searchPlaceholder" v-model="search_text" @click.stop/>
+                <input :placeholder="searchPlaceholder" v-model="searchText" @click.stop/>
             </div>
             <div class="list"
                  @keyup.page-down="onPageDown"
                  v-on:scroll.stop
-                 v-if="list.length > 0 || Object.keys(list).length > 0">
+                 v-if="Object.keys(enumList).length > 0">
                 <div class="list__item" v-if="required === false && multi === false" @click.stop="selListValue(null, $event)">{{noSelText}}</div>
                 <div class="list__item"
-                     v-for="(name, id) in list"
-                     v-show="!search_text || name.toLowerCase().indexOf(search_text.toLowerCase().trim()) > -1"
-                     @click.stop="selListValue(id, $event)"
-                     :class="valueSelected(id) ? 'list__item--checked' : ''">
-                    <div>{{name}}</div>
+                     v-for="(item, index) in enumList"
+                     v-show="!searchText || item.name.toLowerCase().indexOf(searchText.toLowerCase().trim()) > -1"
+                     @click.stop="selListValue(item.id, $event)"
+                     :class="valueSelected(item.id) ? 'list__item--checked' : ''">
+                    <div>{{item.name}}</div>
                 </div>
             </div>
             <div class="footer" v-show="multi === true && showActions === true">
                 <button type="button" @click.stop.defaut="resetSelect">Сбросить</button>
-                <button type="button" @click.stop.defaut="closeSelect(false, $event)">Выбрать</button>
+                <button type="button" @click.stop.defaut="closeSelect(true, false)">Выбрать</button>
             </div>
         </div>
     </div>
@@ -52,6 +58,11 @@ export default {
       default: function () {
         return false
       }
+    },
+    tagged: {
+      type: Boolean,
+      required: false,
+      default: false
     },
     required: {
       type: Boolean,
@@ -84,13 +95,6 @@ export default {
         return {}
       }
     },
-    data: {
-      type: Array,
-      required: false,
-      default: function () {
-        return []
-      }
-    },
     buttons: {
       type: Boolean,
       required: false,
@@ -100,8 +104,9 @@ export default {
   data: function () {
     return {
       open: false,
-      search_text: '',
-      value_text: '',
+      searchText: '',
+      textValue: '',
+      arValue: [],
       values: null
     }
   },
@@ -159,11 +164,10 @@ export default {
       if (typeof checkMulti !== 'boolean') {
         checkMulti = false
       }
-      // console.log('selectpicker: closeSelect ... ', setValue, checkMulti)
+      console.log('selectpicker: closeSelect ... ', setValue, checkMulti)
       if (setValue && (!checkMulti || (checkMulti && this.multi === false))) {
-        this.search_text = ''
+        this.searchText = ''
         this.open = false
-        // console.log('selectpicker: emit value', this.values)
         this.$emit('input', this.values)
       }
     },
@@ -179,7 +183,7 @@ export default {
       console.log('onPageDown')
     },
     selListValue: function ($val, $event) {
-      // console.log('selectPicker: selListValue', $val)
+      console.log('selectPicker: selListValue', $val)
 
       if (this.multi === true && !Array.isArray(this.values)) {
         this.values = []
@@ -193,7 +197,7 @@ export default {
         if (index === -1) {
             index = this.values.indexOf(+$val)
         }
-
+        console.log('selectPicker: selListValue', $val, index, this.values)
         if (index === -1) {
           this.values.push($val)
         } else {
@@ -253,6 +257,35 @@ export default {
       }
     }
   },
+  computed: {
+    enumList: function () {
+      let tmp = []
+      if (Array.isArray(this.list) && this.list.length > 0) {
+        this.list.forEach((item) => {
+          if (typeof value === 'object') {
+            tmp.push(item)
+          } else {
+            console.warn('not correct object of value ', item)
+          }
+        })
+      } else if (typeof this.list === 'object') {
+        Object.keys(this.list).map((id) => {
+          let value = this.list[id]
+          if (typeof value === 'string') {
+            tmp.push({
+              id: id,
+              name: value
+            })
+          } else if (typeof value === 'object') {
+            tmp.push(value)
+          } else {
+            console.warn('not correct object of value ', value)
+          }
+        })
+      }
+      return tmp
+    }
+  },
   watch: {
 
     values: function (newValues) {
@@ -261,24 +294,20 @@ export default {
        */
       // console.log('selectpicker: changed values, new value=', newValues, 'list', this.list)
       let text = []
+      let items = []
 
       // заполняем текст из list
-      Object.keys(this.list).map(($key) => {
-        let name = this.list[$key]
-        if (name && this.valueSelected($key)) {
-          text.push(name)
+      Object.keys(this.enumList).map(($key) => {
+        let item = this.enumList[$key]
+        if (item.name && this.valueSelected(item.id)) {
+          text.push(item.name)
+          items.push(item)
         }
       })
 
-      for (let $key in this.data) {
-        let item = this.list.hasOwnProperty($key) ? this.list[$key] : null
-        if (item && this.valueSelected(item.id)) {
-          text.push(item.name)
-        }
-      }
-
-      this.value_text = text.length < 3 ? text.join(', ') : 'выбрано ' + text.length
-      // console.log('value_text', text, this.value_text)
+      this.textValue = text.length < 3 ? text.join(', ') : 'выбрано ' + text.length
+      this.$set(this, 'arValue', items)
+      // console.log('textValue', text, this.textValue)
     }
   }
 }

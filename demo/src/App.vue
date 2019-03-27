@@ -28,6 +28,17 @@
             placeholder="Выбор из тестового списка"
             searchPlaceholder="Поиск в тестовом списке"></selectpicker>
 
+      <br><br>
+      Multi tagged:<br>
+      <selectpicker
+        :list="list"
+        :multi="true"
+        :tagged="true"
+        :search="true"
+        v-model="selectedMulti"
+        placeholder="Выбор из тестового списка"
+        searchPlaceholder="Поиск в тестовом списке"></selectpicker>
+
         <br>
         <br>
         <br>
