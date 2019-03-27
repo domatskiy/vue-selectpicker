@@ -262,10 +262,10 @@ export default {
       let tmp = []
       if (Array.isArray(this.list) && this.list.length > 0) {
         this.list.forEach((item) => {
-          if (typeof value === 'object') {
+          if (typeof item === 'object' && typeof item.id !== 'undefined') {
             tmp.push(item)
           } else {
-            console.warn('not correct object of value ', item)
+            console.warn('not correct item ', item)
           }
         })
       } else if (typeof this.list === 'object') {
