@@ -2,31 +2,45 @@
 
 npm i vue-selectpicker
 
-## use
+## Properties
+|prop|type|default|||
+|:---------|:---------|:---------|:---------|:---------|
+|list|array or Object|[]||list of values {key: value, key2: value2} or [{id: 1, name: xxx}, {id: 2, name: yyy}]|
+|multi|boolean|false||
+|tagged|boolean|false||
+|search|boolean|false|enable search|
+|placeholder|string|Выбор значения||
+|searchPlaceholder|string|Поиск||
+  
+  
+## Example
+
 
 ```html
 <selectpicker
-    :value="[]"
-    :list="list"
-    :multy="true"
+    :list="valueList"
+    :multi="true"
+    :tagged="true"
     :search="true"
     v-model="selectedList"
-    placeholder="Выбор из тестового списка"
-    searchPlaceholder="Поиск в тестовом списке"></selectpicker>
+    placeholder="Select value"
+    searchPlaceholder="Search">
+</selectpicker>
 ```
 
-example app
-
 ```js
-
 import selectPicker from 'vue-selectpicker'
 Vue.use(selectPicker)
 
 export default {
-  name: 'app',
-  methods: {
-    mapCreated: function ($map) {
-      console.info('mapCreated, $map=', $map)
+  name: 'app', 
+  data: function() {
+    return {
+      valueList: [
+        {id: 1, name: 'val 1'},
+        {id: 2, name: 'val 2'},
+        {id: 3, name: 'val 3'},
+      ]
     }
   }
 }
