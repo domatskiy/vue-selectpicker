@@ -89,7 +89,6 @@ export default {
       default: 'Поиск'
     },
     list: {
-      type: Object,
       required: false,
       default: function () {
         return {}
