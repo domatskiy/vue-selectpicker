@@ -1,6 +1,6 @@
 import Vue from 'vue'
 
-const selectPickerBus = new Vue({
+export default new Vue({
   data () {
     return {
       body_click_handler: null
@@ -19,4 +19,3 @@ const selectPickerBus = new Vue({
   }
 })
 
-export default selectPickerBus
