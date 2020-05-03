@@ -43,7 +43,7 @@ export default {
     noSelText: {
       type: String,
       required: false,
-      default: 'Не выбрано'
+      default: 'No seleccionado'
     },
     value:{},
     multi: {
